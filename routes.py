@@ -37,6 +37,21 @@ def books():
         logger.error(f"Error in books route: {str(e)}")
         return jsonify({'error': 'An error occurred'}), 500
 
+@app.route('/books/active', methods=['GET'])
+def active_books():
+    try:
+        books = Book.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'book_id': book.book_id,
+            'name': book.name,
+            'author': book.author,
+            'year_published': book.year_published,
+            'book_type': book.book_type
+        } for book in books])
+    except Exception as e:
+        logger.error(f"Error in active_books route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
 @app.route('/books/search', methods=['GET'])
 def search_books():
     try:
@@ -89,6 +104,20 @@ def customers():
         logger.error(f"Error in customers route: {str(e)}")
         return jsonify({'error': 'An error occurred'}), 500
 
+@app.route('/customers/active', methods=['GET'])
+def active_customers():
+    try:
+        customers = Customer.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'customer_id': customer.customer_id,
+            'name': customer.name,
+            'city': customer.city,
+            'age': customer.age
+        } for customer in customers])
+    except Exception as e:
+        logger.error(f"Error in active_customers route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
 @app.route('/customers/search', methods=['GET'])
 def search_customers():
     try:
@@ -124,6 +153,12 @@ def loans():
             customer = Customer.query.get(data['customer_id'])
             if not book or not customer or not book.is_active or not customer.is_active:
                 return jsonify({'message': 'Invalid book or customer'}), 400
+            
+            # Check book availability
+            active_loan = Loan.query.filter_by(book_id=data['book_id'], return_date=None).first()
+            if active_loan:
+                return jsonify({'message': 'Book is not available'}), 400
+            
             new_loan = Loan(
                 customer_id=data['customer_id'],
                 book_id=data['book_id'],
