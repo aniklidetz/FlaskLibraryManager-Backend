@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners or other JavaScript functionality here
     console.log('DOM fully loaded and parsed');
 });
 
@@ -82,89 +83,26 @@ function returnBook(loanId) {
     }
 }
 
-function populateBookDropdown() {
-    fetch('/books/active')
-        .then(response => response.json())
-        .then(data => {
-            const bookSelect = document.getElementById('bookSelect');
-            bookSelect.innerHTML = '<option value="">Select a book</option>';
-            data.forEach(book => {
-                const option = document.createElement('option');
-                option.value = book.book_id;
-                option.textContent = `${book.name} by ${book.author}`;
-                bookSelect.appendChild(option);
-            });
-        });
-}
-
-function populateCustomerDropdown() {
-    fetch('/customers/active')
-        .then(response => response.json())
-        .then(data => {
-            const customerSelect = document.getElementById('customerSelect');
-            customerSelect.innerHTML = '<option value="">Select a customer</option>';
-            data.forEach(customer => {
-                const option = document.createElement('option');
-                option.value = customer.customer_id;
-                option.textContent = `${customer.name} (${customer.city})`;
-                customerSelect.appendChild(option);
-            });
-        });
-}
-
-function checkBookAvailability(bookId) {
-    return fetch(`/loans`)
-        .then(response => response.json())
-        .then(loans => {
-            const activeLoans = loans.filter(loan => loan.book_id == bookId && !loan.return_date);
-            return activeLoans.length === 0;
-        });
-}
-
 function createLoan() {
-    const bookId = document.getElementById('bookSelect').value;
-    const customerId = document.getElementById('customerSelect').value;
-    const loanDate = document.getElementById('loanDate').value;
+    const loanData = {
+        customer_id: document.getElementById('customerID').value,
+        book_id: document.getElementById('bookID').value,
+        loan_date: document.getElementById('loanDate').value
+    };
 
-    if (!bookId || !customerId || !loanDate) {
-        alert('Please fill in all fields');
-        return;
-    }
-
-    checkBookAvailability(bookId)
-        .then(isAvailable => {
-            if (!isAvailable) {
-                alert('This book is currently unavailable');
-                return;
-            }
-
-            const loanData = {
-                book_id: bookId,
-                customer_id: customerId,
-                loan_date: loanDate
-            };
-
-            fetch('/loans', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(loanData),
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                location.reload();
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('An error occurred while creating the loan');
-            });
-        });
-}
-
-// Initialize dropdowns when the loans page loads
-if (document.getElementById('bookSelect')) {
-    populateBookDropdown();
-    populateCustomerDropdown();
+    fetch('/loans', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loanData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
