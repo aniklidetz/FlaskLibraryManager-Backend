@@ -12,6 +12,40 @@ function initializeAutocomplete() {
     customerSearch.addEventListener('input', debounce(() => autocomplete(customerSearch, '/customers/autocomplete', displayCustomerDetails), 300));
     bookId.addEventListener('change', () => fetchDetails(bookId.value, '/books/', displayBookDetails));
     customerId.addEventListener('change', () => fetchDetails(customerId.value, '/customers/', displayCustomerDetails));
+
+    // Add event listeners for radio buttons
+    document.getElementById('bookSearchRadio').addEventListener('change', toggleBookInputs);
+    document.getElementById('bookIdRadio').addEventListener('change', toggleBookInputs);
+    document.getElementById('customerSearchRadio').addEventListener('change', toggleCustomerInputs);
+    document.getElementById('customerIdRadio').addEventListener('change', toggleCustomerInputs);
+}
+
+function toggleBookInputs() {
+    const searchGroup = document.getElementById('bookSearchGroup');
+    const idGroup = document.getElementById('bookIdGroup');
+    const isSearchSelected = document.getElementById('bookSearchRadio').checked;
+
+    searchGroup.style.display = isSearchSelected ? 'block' : 'none';
+    idGroup.style.display = isSearchSelected ? 'none' : 'block';
+
+    // Clear inputs and details when switching
+    document.getElementById('bookSearch').value = '';
+    document.getElementById('bookId').value = '';
+    document.getElementById('bookDetails').innerHTML = '';
+}
+
+function toggleCustomerInputs() {
+    const searchGroup = document.getElementById('customerSearchGroup');
+    const idGroup = document.getElementById('customerIdGroup');
+    const isSearchSelected = document.getElementById('customerSearchRadio').checked;
+
+    searchGroup.style.display = isSearchSelected ? 'block' : 'none';
+    idGroup.style.display = isSearchSelected ? 'none' : 'block';
+
+    // Clear inputs and details when switching
+    document.getElementById('customerSearch').value = '';
+    document.getElementById('customerId').value = '';
+    document.getElementById('customerDetails').innerHTML = '';
 }
 
 function debounce(func, delay) {
@@ -79,8 +113,8 @@ function displayCustomerDetails(customer) {
 }
 
 function createLoan() {
-    const bookId = document.getElementById('bookId').value;
-    const customerId = document.getElementById('customerId').value;
+    const bookId = document.getElementById('bookIdRadio').checked ? document.getElementById('bookId').value : document.querySelector(`#bookSearchList option[value="${document.getElementById('bookSearch').value}"]`)?.dataset.id;
+    const customerId = document.getElementById('customerIdRadio').checked ? document.getElementById('customerId').value : document.querySelector(`#customerSearchList option[value="${document.getElementById('customerSearch').value}"]`)?.dataset.id;
     const loanDate = document.getElementById('loanDate').value;
 
     if (!bookId || !customerId || !loanDate) {
