@@ -7,8 +7,6 @@ function initializeAutocomplete() {
     console.log('Initializing autocomplete');
     const bookSearch = document.getElementById('bookSearch');
     const customerSearch = document.getElementById('customerSearch');
-    const bookId = document.getElementById('bookId');
-    const customerId = document.getElementById('customerId');
 
     if (bookSearch) {
         console.log('Setting up book search listener');
@@ -18,46 +16,6 @@ function initializeAutocomplete() {
         console.log('Setting up customer search listener');
         customerSearch.addEventListener('input', debounce(() => autocomplete(customerSearch, '/customers/autocomplete', displayCustomerDetails), 300));
     }
-    if (bookId) {
-        bookId.addEventListener('change', () => fetchDetails(bookId.value, '/books/', displayBookDetails));
-    }
-    if (customerId) {
-        customerId.addEventListener('change', () => fetchDetails(customerId.value, '/customers/', displayCustomerDetails));
-    }
-
-    // Add event listeners for radio buttons
-    document.getElementById('bookSearchRadio')?.addEventListener('change', toggleBookInputs);
-    document.getElementById('bookIdRadio')?.addEventListener('change', toggleBookInputs);
-    document.getElementById('customerSearchRadio')?.addEventListener('change', toggleCustomerInputs);
-    document.getElementById('customerIdRadio')?.addEventListener('change', toggleCustomerInputs);
-}
-
-function toggleBookInputs() {
-    const searchGroup = document.getElementById('bookSearchGroup');
-    const idGroup = document.getElementById('bookIdGroup');
-    const isSearchSelected = document.getElementById('bookSearchRadio').checked;
-
-    searchGroup.style.display = isSearchSelected ? 'block' : 'none';
-    idGroup.style.display = isSearchSelected ? 'none' : 'block';
-
-    // Clear inputs and details when switching
-    document.getElementById('bookSearch').value = '';
-    document.getElementById('bookId').value = '';
-    document.getElementById('bookDetails').innerHTML = '';
-}
-
-function toggleCustomerInputs() {
-    const searchGroup = document.getElementById('customerSearchGroup');
-    const idGroup = document.getElementById('customerIdGroup');
-    const isSearchSelected = document.getElementById('customerSearchRadio').checked;
-
-    searchGroup.style.display = isSearchSelected ? 'block' : 'none';
-    idGroup.style.display = isSearchSelected ? 'none' : 'block';
-
-    // Clear inputs and details when switching
-    document.getElementById('customerSearch').value = '';
-    document.getElementById('customerId').value = '';
-    document.getElementById('customerDetails').innerHTML = '';
 }
 
 function debounce(func, delay) {
@@ -101,15 +59,6 @@ function autocomplete(input, url, displayFunc) {
         .catch(error => console.error('Error in autocomplete:', error));
 }
 
-function fetchDetails(id, url, displayFunc) {
-    if (!id) return;
-
-    fetch(`${url}${id}`)
-        .then(response => response.json())
-        .then(data => displayFunc(data))
-        .catch(error => console.error('Error fetching details:', error));
-}
-
 function displayBookDetails(book) {
     const detailsDiv = document.getElementById('bookDetails');
     detailsDiv.innerHTML = `
@@ -131,12 +80,8 @@ function displayCustomerDetails(customer) {
 
 function createLoan() {
     console.log('Creating loan');
-    const bookId = document.getElementById('bookIdRadio').checked 
-        ? document.getElementById('bookId').value 
-        : document.querySelector(`#bookSearchList option[value="${document.getElementById('bookSearch').value}"]`)?.dataset.id;
-    const customerId = document.getElementById('customerIdRadio').checked 
-        ? document.getElementById('customerId').value 
-        : document.querySelector(`#customerSearchList option[value="${document.getElementById('customerSearch').value}"]`)?.dataset.id;
+    const bookId = document.querySelector(`#bookSearchList option[value="${document.getElementById('bookSearch').value}"]`)?.dataset.id;
+    const customerId = document.querySelector(`#customerSearchList option[value="${document.getElementById('customerSearch').value}"]`)?.dataset.id;
     const loanDate = document.getElementById('loanDate').value;
 
     console.log('Book ID:', bookId);
