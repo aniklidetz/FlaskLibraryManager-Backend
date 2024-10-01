@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Loans Management</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Loan ID</th>
+            <th>Customer ID</th>
+            <th>Book ID</th>
+            <th>Loan Date</th>
+            <th>Return Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in loans %}
+        <tr>
+            <td>{{ loan.loan_id }}</td>
+            <td>{{ loan.customer_id }}</td>
+            <td>{{ loan.book_id }}</td>
+            <td>{{ loan.loan_date }}</td>
+            <td>{{ loan.return_date if loan.return_date else 'Not returned' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

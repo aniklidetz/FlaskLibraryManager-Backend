@@ -159,6 +159,6 @@ def web_loans():
     loans = Loan.query.all()
     return render_template('loans.html', loans=loans)
 
-@app.route('/about')
+@app.route('/web/about')
 def about():
     return render_template('about.html')
