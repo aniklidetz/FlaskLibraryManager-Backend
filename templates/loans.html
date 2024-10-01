@@ -3,6 +3,10 @@
 {% block content %}
 <h1 class="mb-4">Loans Management</h1>
 
+<button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#newLoanModal">
+    New Loan
+</button>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -11,6 +15,7 @@
             <th>Book ID</th>
             <th>Loan Date</th>
             <th>Return Date</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -21,8 +26,47 @@
             <td>{{ loan.book_id }}</td>
             <td>{{ loan.loan_date }}</td>
             <td>{{ loan.return_date if loan.return_date else 'Not returned' }}</td>
+            <td>
+                {% if not loan.return_date %}
+                <button onclick="returnBook({{ loan.loan_id }})" class="btn btn-success btn-sm">Return</button>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<!-- Modal for creating a new loan -->
+<div class="modal fade" id="newLoanModal" tabindex="-1" role="dialog" aria-labelledby="newLoanModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newLoanModalLabel">Create New Loan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="newLoanForm">
+                    <div class="form-group">
+                        <label for="customerID">Customer ID</label>
+                        <input type="number" class="form-control" id="customerID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookID">Book ID</label>
+                        <input type="number" class="form-control" id="bookID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loanDate">Loan Date</label>
+                        <input type="date" class="form-control" id="loanDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createLoan()">Create Loan</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

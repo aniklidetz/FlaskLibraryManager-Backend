@@ -127,7 +127,7 @@ def loans():
             new_loan = Loan(
                 customer_id=data['customer_id'],
                 book_id=data['book_id'],
-                loan_date=datetime.utcnow().date()
+                loan_date=datetime.strptime(data['loan_date'], '%Y-%m-%d').date()
             )
             db.session.add(new_loan)
             db.session.commit()

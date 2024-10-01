@@ -71,3 +71,38 @@ function deactivateCustomer(customerId) {
             });
     }
 }
+
+function returnBook(loanId) {
+    if (confirm('Are you sure you want to return this book?')) {
+        fetch(`/loans/${loanId}/return`, { method: 'PUT' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload();
+            });
+    }
+}
+
+function createLoan() {
+    const loanData = {
+        customer_id: document.getElementById('customerID').value,
+        book_id: document.getElementById('bookID').value,
+        loan_date: document.getElementById('loanDate').value
+    };
+
+    fetch('/loans', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loanData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
