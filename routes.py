@@ -1,0 +1,164 @@
+from flask import jsonify, request, render_template
+from app import app, db
+from models import Book, Customer, Loan
+from datetime import datetime, timedelta
+
+# API Routes
+
+@app.route('/books', methods=['GET', 'POST'])
+def books():
+    if request.method == 'POST':
+        data = request.json
+        new_book = Book(
+            name=data['name'],
+            author=data['author'],
+            year_published=data['year_published'],
+            book_type=data['book_type']
+        )
+        db.session.add(new_book)
+        db.session.commit()
+        return jsonify({'message': 'Book added successfully'}), 201
+    else:
+        books = Book.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'book_id': book.book_id,
+            'name': book.name,
+            'author': book.author,
+            'year_published': book.year_published,
+            'book_type': book.book_type
+        } for book in books])
+
+@app.route('/books/search', methods=['GET'])
+def search_books():
+    name = request.args.get('name')
+    books = Book.query.filter(Book.name.ilike(f'%{name}%'), Book.is_active==True).all()
+    return jsonify([{
+        'book_id': book.book_id,
+        'name': book.name,
+        'author': book.author,
+        'year_published': book.year_published,
+        'book_type': book.book_type
+    } for book in books])
+
+@app.route('/books/<int:book_id>/deactivate', methods=['PUT'])
+def deactivate_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    book.is_active = False
+    db.session.commit()
+    return jsonify({'message': 'Book deactivated successfully'})
+
+@app.route('/customers', methods=['GET', 'POST'])
+def customers():
+    if request.method == 'POST':
+        data = request.json
+        new_customer = Customer(
+            name=data['name'],
+            city=data['city'],
+            age=data['age']
+        )
+        db.session.add(new_customer)
+        db.session.commit()
+        return jsonify({'message': 'Customer added successfully'}), 201
+    else:
+        customers = Customer.query.filter_by(is_active=True).all()
+        return jsonify([{
+            'customer_id': customer.customer_id,
+            'name': customer.name,
+            'city': customer.city,
+            'age': customer.age
+        } for customer in customers])
+
+@app.route('/customers/search', methods=['GET'])
+def search_customers():
+    name = request.args.get('name')
+    customers = Customer.query.filter(Customer.name.ilike(f'%{name}%'), Customer.is_active==True).all()
+    return jsonify([{
+        'customer_id': customer.customer_id,
+        'name': customer.name,
+        'city': customer.city,
+        'age': customer.age
+    } for customer in customers])
+
+@app.route('/customers/<int:customer_id>/deactivate', methods=['PUT'])
+def deactivate_customer(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    customer.is_active = False
+    db.session.commit()
+    return jsonify({'message': 'Customer deactivated successfully'})
+
+@app.route('/loans', methods=['GET', 'POST'])
+def loans():
+    if request.method == 'POST':
+        data = request.json
+        book = Book.query.get(data['book_id'])
+        customer = Customer.query.get(data['customer_id'])
+        if not book or not customer or not book.is_active or not customer.is_active:
+            return jsonify({'message': 'Invalid book or customer'}), 400
+        new_loan = Loan(
+            customer_id=data['customer_id'],
+            book_id=data['book_id'],
+            loan_date=datetime.utcnow().date()
+        )
+        db.session.add(new_loan)
+        db.session.commit()
+        return jsonify({'message': 'Loan created successfully'}), 201
+    else:
+        loans = Loan.query.all()
+        return jsonify([{
+            'loan_id': loan.loan_id,
+            'customer_id': loan.customer_id,
+            'book_id': loan.book_id,
+            'loan_date': loan.loan_date.isoformat(),
+            'return_date': loan.return_date.isoformat() if loan.return_date else None
+        } for loan in loans])
+
+@app.route('/loans/<int:loan_id>/return', methods=['PUT'])
+def return_book(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+    loan.return_date = datetime.utcnow().date()
+    db.session.commit()
+    return jsonify({'message': 'Book returned successfully'})
+
+@app.route('/loans/late', methods=['GET'])
+def late_loans():
+    today = datetime.utcnow().date()
+    loans = Loan.query.filter(Loan.return_date == None).all()
+    late_loans = []
+    for loan in loans:
+        book = Book.query.get(loan.book_id)
+        if book:
+            max_days = {1: 10, 2: 5, 3: 2}[book.book_type]
+            if (today - loan.loan_date).days > max_days:
+                late_loans.append({
+                    'loan_id': loan.loan_id,
+                    'customer_id': loan.customer_id,
+                    'book_id': loan.book_id,
+                    'loan_date': loan.loan_date.isoformat(),
+                    'days_overdue': (today - loan.loan_date).days - max_days
+                })
+    return jsonify(late_loans)
+
+# Web Routes
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/web/books')
+def web_books():
+    books = Book.query.filter_by(is_active=True).all()
+    return render_template('books.html', books=books)
+
+@app.route('/web/customers')
+def web_customers():
+    customers = Customer.query.filter_by(is_active=True).all()
+    return render_template('customers.html', customers=customers)
+
+@app.route('/web/loans')
+def web_loans():
+    loans = Loan.query.all()
+    return render_template('loans.html', loans=loans)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')

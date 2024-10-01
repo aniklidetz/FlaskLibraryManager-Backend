@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Customers Management</h1>
+
+<div class="mb-3">
+    <input type="text" id="customerSearch" class="form-control" placeholder="Search customers by name">
+    <button onclick="searchCustomers()" class="btn btn-primary mt-2">Search</button>
+</div>
+
+<table id="customersTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>Age</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.city }}</td>
+            <td>{{ customer.age }}</td>
+            <td>
+                <button onclick="deactivateCustomer({{ customer.customer_id }})" class="btn btn-danger btn-sm">Deactivate</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCustomerModal">
+    Add New Customer
+</button>
+
+<!-- Modal for adding a new customer -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="form-group">
+                        <label for="customerName">Name</label>
+                        <input type="text" class="form-control" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerCity">City</label>
+                        <input type="text" class="form-control" id="customerCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAge">Age</label>
+                        <input type="number" class="form-control" id="customerAge" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="addCustomer()">Add Customer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addCustomer() {
+    const customerData = {
+        name: document.getElementById('customerName').value,
+        city: document.getElementById('customerCity').value,
+        age: parseInt(document.getElementById('customerAge').value)
+    };
+
+    fetch('/customers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}

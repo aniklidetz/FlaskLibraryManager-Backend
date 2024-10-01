@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Books Management</h1>
+
+<div class="mb-3">
+    <input type="text" id="bookSearch" class="form-control" placeholder="Search books by name">
+    <button onclick="searchBooks()" class="btn btn-primary mt-2">Search</button>
+</div>
+
+<table id="booksTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Author</th>
+            <th>Year Published</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.name }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.year_published }}</td>
+            <td>{{ book.book_type }}</td>
+            <td>
+                <button onclick="deactivateBook({{ book.book_id }})" class="btn btn-danger btn-sm">Deactivate</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addBookModal">
+    Add New Book
+</button>
+
+<!-- Modal for adding a new book -->
+<div class="modal fade" id="addBookModal" tabindex="-1" role="dialog" aria-labelledby="addBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addBookForm">
+                    <div class="form-group">
+                        <label for="bookName">Name</label>
+                        <input type="text" class="form-control" id="bookName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthor">Author</label>
+                        <input type="text" class="form-control" id="bookAuthor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookYear">Year Published</label>
+                        <input type="number" class="form-control" id="bookYear" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookType">Type</label>
+                        <select class="form-control" id="bookType" required>
+                            <option value="1">Type 1 (10 days)</option>
+                            <option value="2">Type 2 (5 days)</option>
+                            <option value="3">Type 3 (2 days)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addBook() {
+    const bookData = {
+        name: document.getElementById('bookName').value,
+        author: document.getElementById('bookAuthor').value,
+        year_published: parseInt(document.getElementById('bookYear').value),
+        book_type: parseInt(document.getElementById('bookType').value)
+    };
+
+    fetch('/books', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}
