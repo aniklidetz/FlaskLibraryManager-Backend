@@ -3,7 +3,6 @@ from app import app, db
 from models import Book, Customer, Loan
 from datetime import datetime, timedelta
 import logging
-from sqlalchemy import or_
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -11,72 +10,209 @@ logger = logging.getLogger(__name__)
 
 # API Routes
 
-@app.route('/books/autocomplete', methods=['GET'])
-def books_autocomplete():
+@app.route('/books', methods=['GET', 'POST'])
+def books():
     try:
-        term = request.args.get('term', '')
-        logger.info(f"Autocomplete request for books with term: {term}")
-        books = Book.query.filter(
-            or_(
-                Book.name.ilike(f'%{term}%'),
-                Book.author.ilike(f'%{term}%')
+        if request.method == 'POST':
+            data = request.json
+            new_book = Book(
+                name=data['name'],
+                author=data['author'],
+                year_published=data['year_published'],
+                book_type=data['book_type']
             )
-        ).filter_by(is_active=True).limit(10).all()
-        result = [{'id': book.book_id, 'name': f"{book.name} by {book.author}"} for book in books]
-        logger.info(f"Autocomplete result for books: {result}")
-        return jsonify(result)
+            db.session.add(new_book)
+            db.session.commit()
+            return jsonify({'message': 'Book added successfully'}), 201
+        else:
+            books = Book.query.filter_by(is_active=True).all()
+            return jsonify([{
+                'book_id': book.book_id,
+                'name': book.name,
+                'author': book.author,
+                'year_published': book.year_published,
+                'book_type': book.book_type
+            } for book in books])
     except Exception as e:
-        logger.error(f"Error in books_autocomplete route: {str(e)}")
+        logger.error(f"Error in books route: {str(e)}")
         return jsonify({'error': 'An error occurred'}), 500
 
-@app.route('/customers/autocomplete', methods=['GET'])
-def customers_autocomplete():
+@app.route('/books/active', methods=['GET'])
+def active_books():
     try:
-        term = request.args.get('term', '')
-        logger.info(f"Autocomplete request for customers with term: {term}")
-        customers = Customer.query.filter(
-            or_(
-                Customer.name.ilike(f'%{term}%'),
-                Customer.city.ilike(f'%{term}%')
-            )
-        ).filter_by(is_active=True).limit(10).all()
-        result = [{'id': customer.customer_id, 'name': f"{customer.name} ({customer.city})"} for customer in customers]
-        logger.info(f"Autocomplete result for customers: {result}")
-        return jsonify(result)
-    except Exception as e:
-        logger.error(f"Error in customers_autocomplete route: {str(e)}")
-        return jsonify({'error': 'An error occurred'}), 500
-
-@app.route('/books/<int:book_id>', methods=['GET'])
-def get_book(book_id):
-    try:
-        book = Book.query.get_or_404(book_id)
-        return jsonify({
+        books = Book.query.filter_by(is_active=True).all()
+        return jsonify([{
             'book_id': book.book_id,
             'name': book.name,
             'author': book.author,
             'year_published': book.year_published,
             'book_type': book.book_type
-        })
+        } for book in books])
     except Exception as e:
-        logger.error(f"Error in get_book route: {str(e)}")
+        logger.error(f"Error in active_books route: {str(e)}")
         return jsonify({'error': 'An error occurred'}), 500
 
-@app.route('/customers/<int:customer_id>', methods=['GET'])
-def get_customer(customer_id):
+@app.route('/books/search', methods=['GET'])
+def search_books():
     try:
-        customer = Customer.query.get_or_404(customer_id)
-        return jsonify({
+        name = request.args.get('name')
+        books = Book.query.filter(Book.name.ilike(f'%{name}%'), Book.is_active==True).all()
+        return jsonify([{
+            'book_id': book.book_id,
+            'name': book.name,
+            'author': book.author,
+            'year_published': book.year_published,
+            'book_type': book.book_type
+        } for book in books])
+    except Exception as e:
+        logger.error(f"Error in search_books route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/books/<int:book_id>/deactivate', methods=['PUT'])
+def deactivate_book(book_id):
+    try:
+        book = Book.query.get_or_404(book_id)
+        book.is_active = False
+        db.session.commit()
+        return jsonify({'message': 'Book deactivated successfully'})
+    except Exception as e:
+        logger.error(f"Error in deactivate_book route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/customers', methods=['GET', 'POST'])
+def customers():
+    try:
+        if request.method == 'POST':
+            data = request.json
+            new_customer = Customer(
+                name=data['name'],
+                city=data['city'],
+                age=data['age']
+            )
+            db.session.add(new_customer)
+            db.session.commit()
+            return jsonify({'message': 'Customer added successfully'}), 201
+        else:
+            customers = Customer.query.filter_by(is_active=True).all()
+            return jsonify([{
+                'customer_id': customer.customer_id,
+                'name': customer.name,
+                'city': customer.city,
+                'age': customer.age
+            } for customer in customers])
+    except Exception as e:
+        logger.error(f"Error in customers route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/customers/active', methods=['GET'])
+def active_customers():
+    try:
+        customers = Customer.query.filter_by(is_active=True).all()
+        return jsonify([{
             'customer_id': customer.customer_id,
             'name': customer.name,
             'city': customer.city,
             'age': customer.age
-        })
+        } for customer in customers])
     except Exception as e:
-        logger.error(f"Error in get_customer route: {str(e)}")
+        logger.error(f"Error in active_customers route: {str(e)}")
         return jsonify({'error': 'An error occurred'}), 500
 
-# Existing routes (books, active_books, search_books, deactivate_book, customers, active_customers, search_customers, deactivate_customer, loans, return_book, late_loans) remain unchanged
+@app.route('/customers/search', methods=['GET'])
+def search_customers():
+    try:
+        name = request.args.get('name')
+        customers = Customer.query.filter(Customer.name.ilike(f'%{name}%'), Customer.is_active==True).all()
+        return jsonify([{
+            'customer_id': customer.customer_id,
+            'name': customer.name,
+            'city': customer.city,
+            'age': customer.age
+        } for customer in customers])
+    except Exception as e:
+        logger.error(f"Error in search_customers route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/customers/<int:customer_id>/deactivate', methods=['PUT'])
+def deactivate_customer(customer_id):
+    try:
+        customer = Customer.query.get_or_404(customer_id)
+        customer.is_active = False
+        db.session.commit()
+        return jsonify({'message': 'Customer deactivated successfully'})
+    except Exception as e:
+        logger.error(f"Error in deactivate_customer route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/loans', methods=['GET', 'POST'])
+def loans():
+    try:
+        if request.method == 'POST':
+            data = request.json
+            book = Book.query.get(data['book_id'])
+            customer = Customer.query.get(data['customer_id'])
+            if not book or not customer or not book.is_active or not customer.is_active:
+                return jsonify({'message': 'Invalid book or customer'}), 400
+            
+            # Check book availability
+            active_loan = Loan.query.filter_by(book_id=data['book_id'], return_date=None).first()
+            if active_loan:
+                return jsonify({'message': 'Book is not available'}), 400
+            
+            new_loan = Loan(
+                customer_id=data['customer_id'],
+                book_id=data['book_id'],
+                loan_date=datetime.strptime(data['loan_date'], '%Y-%m-%d').date()
+            )
+            db.session.add(new_loan)
+            db.session.commit()
+            return jsonify({'message': 'Loan created successfully'}), 201
+        else:
+            loans = Loan.query.all()
+            return jsonify([{
+                'loan_id': loan.loan_id,
+                'customer_id': loan.customer_id,
+                'book_id': loan.book_id,
+                'loan_date': loan.loan_date.isoformat(),
+                'return_date': loan.return_date.isoformat() if loan.return_date else None
+            } for loan in loans])
+    except Exception as e:
+        logger.error(f"Error in loans route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/loans/<int:loan_id>/return', methods=['PUT'])
+def return_book(loan_id):
+    try:
+        loan = Loan.query.get_or_404(loan_id)
+        loan.return_date = datetime.utcnow().date()
+        db.session.commit()
+        return jsonify({'message': 'Book returned successfully'})
+    except Exception as e:
+        logger.error(f"Error in return_book route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
+
+@app.route('/loans/late', methods=['GET'])
+def late_loans():
+    try:
+        today = datetime.utcnow().date()
+        loans = Loan.query.filter(Loan.return_date == None).all()
+        late_loans = []
+        for loan in loans:
+            book = Book.query.get(loan.book_id)
+            if book:
+                max_days = {1: 10, 2: 5, 3: 2}[book.book_type]
+                if (today - loan.loan_date).days > max_days:
+                    late_loans.append({
+                        'loan_id': loan.loan_id,
+                        'customer_id': loan.customer_id,
+                        'book_id': loan.book_id,
+                        'loan_date': loan.loan_date.isoformat(),
+                        'days_overdue': (today - loan.loan_date).days - max_days
+                    })
+        return jsonify(late_loans)
+    except Exception as e:
+        logger.error(f"Error in late_loans route: {str(e)}")
+        return jsonify({'error': 'An error occurred'}), 500
 
 # Web Routes
 
@@ -122,33 +258,3 @@ def about():
     except Exception as e:
         logger.error(f"Error in about route: {str(e)}")
         return "An error occurred", 500
-
-@app.route('/loans', methods=['POST'])
-def create_loan():
-    try:
-        data = request.json
-        logger.info(f"Received loan creation request: {data}")
-        
-        book = Book.query.get(data['book_id'])
-        customer = Customer.query.get(data['customer_id'])
-        
-        if not book or not customer or not book.is_active or not customer.is_active:
-            return jsonify({'message': 'Invalid book or customer'}), 400
-        
-        # Check book availability
-        active_loan = Loan.query.filter_by(book_id=data['book_id'], return_date=None).first()
-        if active_loan:
-            return jsonify({'message': 'Book is not available'}), 400
-        
-        new_loan = Loan(
-            customer_id=data['customer_id'],
-            book_id=data['book_id'],
-            loan_date=datetime.strptime(data['loan_date'], '%Y-%m-%d').date()
-        )
-        db.session.add(new_loan)
-        db.session.commit()
-        logger.info(f"Loan created successfully: {new_loan.loan_id}")
-        return jsonify({'message': 'Loan created successfully'}), 201
-    except Exception as e:
-        logger.error(f"Error in create_loan route: {str(e)}")
-        return jsonify({'error': 'An error occurred'}), 500
