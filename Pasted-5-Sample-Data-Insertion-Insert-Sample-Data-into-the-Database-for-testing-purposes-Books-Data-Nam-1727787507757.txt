@@ -1,0 +1,243 @@
+5. Sample Data Insertion:
+Insert Sample Data into the Database for testing purposes.
+Books Data:
+Name
+Author
+Year Published
+Type
+To Kill a Mockingbird
+Harper Lee
+1960
+1
+1984
+George Orwell
+1949
+2
+The Great Gatsby
+F. Scott Fitzgerald
+1925
+3
+The Catcher in the Rye
+J.D. Salinger
+1951
+1
+Pride and Prejudice
+Jane Austen
+1813
+2
+The Hobbit
+J.R.R. Tolkien
+1937
+3
+Moby Dick
+Herman Melville
+1851
+1
+War and Peace
+Leo Tolstoy
+1869
+2
+Crime and Punishment
+Fyodor Dostoevsky
+1866
+3
+Brave New World
+Aldous Huxley
+1932
+1
+Anna Karenina
+Leo Tolstoy
+1877
+2
+Ulysses
+James Joyce
+1922
+3
+The Brothers Karamazov
+Fyodor Dostoevsky
+1880
+1
+The Grapes of Wrath
+John Steinbeck
+1939
+2
+Lord of the Flies
+William Golding
+1954
+3
+Jane Eyre
+Charlotte Brontë
+1847
+1
+Wuthering Heights
+Emily Brontë
+1847
+2
+Don Quixote
+Miguel de Cervantes
+1605
+3
+The Divine Comedy
+Dante Alighieri
+1320
+1
+The Odyssey
+Homer
+-800
+2
+
+
+Customers Data:
+Name
+City
+Age
+John Doe
+New York
+30
+Emily Clark
+Los Angeles
+25
+Michael Johnson
+Chicago
+40
+Sophia Brown
+Houston
+35
+James Wilson
+Phoenix
+28
+Olivia Martin
+Philadelphia
+22
+William Garcia
+San Antonio
+45
+Isabella Anderson
+San Diego
+31
+Henry Davis
+Dallas
+26
+Amelia Rodriguez
+San Jose
+50
+Alexander Lee
+Austin
+33
+Mia Hernandez
+Jacksonville
+21
+Ethan Martinez
+Fort Worth
+29
+Charlotte White
+Columbus
+42
+Lucas Thomas
+San Francisco
+34
+Grace Thompson
+Indianapolis
+27
+Liam Scott
+Seattle
+38
+Ava Moore
+Denver
+24
+Benjamin King
+Washington D.C.
+46
+Harper Lewis
+Boston
+37
+
+
+Loans Data:
+Book ID
+Customer ID
+Loan Date
+Return Date
+1
+5
+2023-09-01
+2023-09-08
+3
+1
+2023-09-05
+2023-09-10
+2
+7
+2023-09-07
+2023-09-09
+4
+6
+2023-09-10
+2023-09-15
+5
+8
+2023-09-12
+NULL
+6
+9
+2023-09-14
+NULL
+7
+2
+2023-09-15
+2023-09-18
+8
+10
+2023-09-17
+NULL
+9
+3
+2023-09-19
+NULL
+10
+4
+2023-09-20
+NULL
+1
+12
+2023-09-02
+2023-09-09
+2
+15
+2023-09-06
+NULL
+3
+13
+2023-09-08
+2023-09-11
+4
+20
+2023-09-12
+NULL
+5
+17
+2023-09-14
+2023-09-19
+6
+18
+2023-09-16
+NULL
+7
+14
+2023-09-17
+NULL
+8
+19
+2023-09-18
+2023-09-23
+9
+11
+2023-09-20
+NULL
+10
+16
+2023-09-21
+2023-09-28
+
+
+Note: book_id and customer_id are auto-generated upon insertion into the Books and Customers tables.
