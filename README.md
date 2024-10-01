@@ -55,4 +55,4 @@ The application uses an SQLite database with three tables:
 ## Installation
 1Clone the repository:
    ```bash
-   git clone <https://github.com/aniklidetz/FlaskLibraryManager-Backend.git>
+   git clone <https://github.com/aniklidetz/FlaskLibraryManagerBackend.git>
