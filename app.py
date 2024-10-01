@@ -1,16 +1,19 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
+# create the app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# configure the SQLite database, relative to the app instance folder
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///library.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# initialize the app with the extension
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
-from routes import *
+from models import Book, Customer, Loan
+import routes
 
 if __name__ == '__main__':
     with app.app_context():
