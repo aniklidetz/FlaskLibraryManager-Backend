@@ -1,23 +1,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
+    initializeAutocomplete();
 });
 
 function initializeAutocomplete() {
+    console.log('Initializing autocomplete');
     const bookSearch = document.getElementById('bookSearch');
     const customerSearch = document.getElementById('customerSearch');
     const bookId = document.getElementById('bookId');
     const customerId = document.getElementById('customerId');
 
-    bookSearch.addEventListener('input', debounce(() => autocomplete(bookSearch, '/books/autocomplete', displayBookDetails), 300));
-    customerSearch.addEventListener('input', debounce(() => autocomplete(customerSearch, '/customers/autocomplete', displayCustomerDetails), 300));
-    bookId.addEventListener('change', () => fetchDetails(bookId.value, '/books/', displayBookDetails));
-    customerId.addEventListener('change', () => fetchDetails(customerId.value, '/customers/', displayCustomerDetails));
+    if (bookSearch) {
+        console.log('Setting up book search listener');
+        bookSearch.addEventListener('input', debounce(() => autocomplete(bookSearch, '/books/autocomplete', displayBookDetails), 300));
+    }
+    if (customerSearch) {
+        console.log('Setting up customer search listener');
+        customerSearch.addEventListener('input', debounce(() => autocomplete(customerSearch, '/customers/autocomplete', displayCustomerDetails), 300));
+    }
+    if (bookId) {
+        bookId.addEventListener('change', () => fetchDetails(bookId.value, '/books/', displayBookDetails));
+    }
+    if (customerId) {
+        customerId.addEventListener('change', () => fetchDetails(customerId.value, '/customers/', displayCustomerDetails));
+    }
 
     // Add event listeners for radio buttons
-    document.getElementById('bookSearchRadio').addEventListener('change', toggleBookInputs);
-    document.getElementById('bookIdRadio').addEventListener('change', toggleBookInputs);
-    document.getElementById('customerSearchRadio').addEventListener('change', toggleCustomerInputs);
-    document.getElementById('customerIdRadio').addEventListener('change', toggleCustomerInputs);
+    document.getElementById('bookSearchRadio')?.addEventListener('change', toggleBookInputs);
+    document.getElementById('bookIdRadio')?.addEventListener('change', toggleBookInputs);
+    document.getElementById('customerSearchRadio')?.addEventListener('change', toggleCustomerInputs);
+    document.getElementById('customerIdRadio')?.addEventListener('change', toggleCustomerInputs);
 }
 
 function toggleBookInputs() {
@@ -59,12 +71,15 @@ function debounce(func, delay) {
 }
 
 function autocomplete(input, url, displayFunc) {
+    console.log('Autocomplete function called');
     const term = input.value;
     if (term.length < 2) return;
 
+    console.log(`Fetching autocomplete data for: ${term}`);
     fetch(`${url}?term=${encodeURIComponent(term)}`)
         .then(response => response.json())
         .then(data => {
+            console.log('Autocomplete data received:', data);
             const datalist = document.createElement('datalist');
             datalist.id = `${input.id}List`;
             data.forEach(item => {
@@ -82,7 +97,8 @@ function autocomplete(input, url, displayFunc) {
             }
             
             input.setAttribute('list', datalist.id);
-        });
+        })
+        .catch(error => console.error('Error in autocomplete:', error));
 }
 
 function fetchDetails(id, url, displayFunc) {
@@ -90,7 +106,8 @@ function fetchDetails(id, url, displayFunc) {
 
     fetch(`${url}${id}`)
         .then(response => response.json())
-        .then(data => displayFunc(data));
+        .then(data => displayFunc(data))
+        .catch(error => console.error('Error fetching details:', error));
 }
 
 function displayBookDetails(book) {
@@ -113,11 +130,21 @@ function displayCustomerDetails(customer) {
 }
 
 function createLoan() {
-    const bookId = document.getElementById('bookIdRadio').checked ? document.getElementById('bookId').value : document.querySelector(`#bookSearchList option[value="${document.getElementById('bookSearch').value}"]`)?.dataset.id;
-    const customerId = document.getElementById('customerIdRadio').checked ? document.getElementById('customerId').value : document.querySelector(`#customerSearchList option[value="${document.getElementById('customerSearch').value}"]`)?.dataset.id;
+    console.log('Creating loan');
+    const bookId = document.getElementById('bookIdRadio').checked 
+        ? document.getElementById('bookId').value 
+        : document.querySelector(`#bookSearchList option[value="${document.getElementById('bookSearch').value}"]`)?.dataset.id;
+    const customerId = document.getElementById('customerIdRadio').checked 
+        ? document.getElementById('customerId').value 
+        : document.querySelector(`#customerSearchList option[value="${document.getElementById('customerSearch').value}"]`)?.dataset.id;
     const loanDate = document.getElementById('loanDate').value;
 
+    console.log('Book ID:', bookId);
+    console.log('Customer ID:', customerId);
+    console.log('Loan Date:', loanDate);
+
     if (!bookId || !customerId || !loanDate) {
+        console.log('Missing fields');
         alert('Please fill in all fields');
         return;
     }
